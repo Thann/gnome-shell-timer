@@ -200,6 +200,21 @@ Indicator.prototype = {
         this._refreshTimer();
     },
 
+	//Left clicking the icon will start the timer
+	_onButtonPress: function(actor, event) {
+		let button = event.get_button();
+		if (button == 1 && this._stopTimer == true) {//left-click
+			this._widget.toggle();
+			this.menu.close();
+		} else {// if (button == 3) { //right-click
+			if (this.menu.isOpen) {
+				this.menu.close();
+			} else {
+				this.menu.open();
+			}
+		}
+	},
+
     //Add sliders SubMenu to manually set the timer
     _buildTimerMenu: function() {
         //Hours
