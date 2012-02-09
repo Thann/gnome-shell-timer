@@ -39,10 +39,10 @@ const _ = Gettext.gettext;
 const Format = imports.misc.format;
 
 try {
-	const Gst = imports.gi.Gst;
-	Gst.init(null);
+    const Gst = imports.gi.Gst;
+    Gst.init(null);
 } catch(e) {
-	global.logError("TeaTimer: GST faild to load!");
+    global.logError("Timer: GST faild to load!");
 }
 
 function getSettings(schema) {
@@ -114,12 +114,12 @@ Indicator.prototype = {
         load_time();
         load_settings();
 
-		//Manually set the location of the file we're playing.
-		let Extension = imports.ui.extensionSystem.extensionMeta['timer@olebowle.gmx.com'];
-		let soundURI = GLib.filename_to_uri(GLib.build_filenamev([Extension.path, 'bell.wav']),null);
-		//Make sound-playing-object
-		this._playbin = Gst.ElementFactory.make('playbin2', null);
-		this._playbin.set_property('uri', soundURI);
+        //Manually set the location of the file we're playing.
+        let Extension = imports.ui.extensionSystem.extensionMeta['timer@olebowle.gmx.com'];
+        let soundURI = GLib.filename_to_uri(GLib.build_filenamev([Extension.path, 'bell.wav']),null);
+        //Make sound-playing-object
+        this._playbin = Gst.ElementFactory.make('playbin2', null);
+        this._playbin.set_property('uri', soundURI);
 
         //Set Logo
         this._logo = new St.Icon({ icon_name: 'utilities-timer',
@@ -200,23 +200,35 @@ Indicator.prototype = {
         this._refreshTimer();
     },
 
-	//Left clicking the icon will start the timer
-	_onButtonPress: function(actor, event) {
-		let button = event.get_button();
-		if (button == 1 && this._stopTimer == true) {//left-click
-			this._widget.toggle();
-			this.menu.close();
-		} else {// if (button == 3) { //right-click
-			if (this.menu.isOpen) {
-				this.menu.close();
-			} else {
-				this.menu.open();
-			}
-		}
-	},
+    //Left clicking the icon will start the timer
+    _onButtonPress: function(actor, event) {
+        let button = event.get_button();
+        if (button == 1 && this._stopTimer == true) {//left-click
+            this._widget.toggle();
+            this.menu.close();
+        } else {// if (button == 3) { //right-click
+            if (this.menu.isOpen) {
+                this.menu.close();
+            } else {
+                this.menu.open();
+            }
+        }
+    },
 
     //Add sliders SubMenu to manually set the timer
     _buildTimerMenu: function() {
+        //Helper function that refreshes the applet whenever you change one of the sliders
+        let update = Lang.bind(this, function() {
+            this._time = this._hours*3600 + this._minutes*60 + this._seconds;
+            this._issuer = 'setTimer';
+            //'_stopTimer' must be 'true' when it's called from this location
+            let temp = this._stopTimer;
+            this._stopTimer = true;
+            this._refreshTimer();
+            this._stopTimer = temp;
+            this._pie.queue_repaint();
+        });
+        
         //Hours
         let item = new PopupMenu.PopupMenuItem(_("Hours"), { reactive: false });
         this._hoursLabel = new St.Label({ text: this._hours.toString() + "h" });
@@ -228,8 +240,8 @@ Indicator.prototype = {
         this._hoursSlider.connect('value-changed', Lang.bind(this, function() {
             this._hours = Math.ceil(this._hoursSlider._value*23);
             this._hoursLabel.set_text(this._hours.toString() + "h");
-            this._time = this._hours*3600 + this._minutes*60 + this._seconds;
-            this._issuer = 'setTimer';
+            this._settings.set_int('manual-hours',this._hours);
+            update();
         } ));
         this._timerMenu.menu.addMenuItem(this._hoursSlider);
 
@@ -244,8 +256,8 @@ Indicator.prototype = {
         this._minutesSlider.connect('value-changed', Lang.bind(this, function() {
             this._minutes = Math.ceil(this._minutesSlider._value*59);
             this._minutesLabel.set_text(this._minutes.toString() + "m");
-            this._time = this._hours*3600 + this._minutes*60 + this._seconds;
-            this._issuer = 'setTimer';
+            this._settings.set_int('manual-minutes',this._minutes);
+            update();
         } ));
         this._timerMenu.menu.addMenuItem(this._minutesSlider);
 
@@ -260,8 +272,8 @@ Indicator.prototype = {
         this._secondsSlider.connect('value-changed', Lang.bind(this, function() {
             this._seconds = Math.ceil(this._secondsSlider._value*59);
             this._secondsLabel.set_text(this._seconds.toString() + "s");
-            this._time = this._hours*3600 + this._minutes*60 + this._seconds;
-            this._issuer = 'setTimer';
+            this._settings.set_int('manual-seconds',this._seconds);
+            update();
         } ));
         this._timerMenu.menu.addMenuItem(this._secondsSlider);
     },
@@ -353,15 +365,15 @@ Indicator.prototype = {
             label.set_text("%02d:%02d".format(minutes,seconds));
     },
 
-	//Play a sound
-	_playNotificationSound: function() {
-		try {
-			this._playbin.set_state(Gst.State.READY);
-			this._playbin.set_state(Gst.State.PLAYING);
-		} catch (e) {
-			global.logError('Timer: Error playing sound file "'+ soundURI +'": ' + e.message);
-		}
-	},
+    //Play a sound
+    _playNotificationSound: function() {
+        try {
+            this._playbin.set_state(Gst.State.READY);
+            this._playbin.set_state(Gst.State.PLAYING);
+        } catch (e) {
+            global.logError('Timer: Error playing sound file "'+ soundURI +'": ' + e.message);
+        }
+    },
 
     //Notify user of changes
     _notifyUser: function(text) {
