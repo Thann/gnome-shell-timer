@@ -38,6 +38,13 @@ const _ = Gettext.gettext;
 
 const Format = imports.misc.format;
 
+try {
+	const Gst = imports.gi.Gst;
+	Gst.init(null);
+} catch(e) {
+	global.logError("TeaTimer: GST faild to load!");
+}
+
 function getSettings(schema) {
     if (Gio.Settings.list_schemas().indexOf(schema) == -1)
         throw _("Schema \"%s\" not found.").format(schema);
@@ -106,6 +113,13 @@ Indicator.prototype = {
         this._issuer = 'setTimer';
         load_time();
         load_settings();
+
+		//Manually set the location of the file we're playing.
+		let Extension = imports.ui.extensionSystem.extensionMeta['timer@olebowle.gmx.com'];
+		let soundURI = GLib.filename_to_uri(GLib.build_filenamev([Extension.path, 'bell.wav']),null);
+		//Make sound-playing-object
+		this._playbin = Gst.ElementFactory.make('playbin2', null);
+		this._playbin.set_property('uri', soundURI);
 
         //Set Logo
         this._logo = new St.Icon({ icon_name: 'utilities-timer',
@@ -324,6 +338,16 @@ Indicator.prototype = {
             label.set_text("%02d:%02d".format(minutes,seconds));
     },
 
+	//Play a sound
+	_playNotificationSound: function() {
+		try {
+			this._playbin.set_state(Gst.State.READY);
+			this._playbin.set_state(Gst.State.PLAYING);
+		} catch (e) {
+			global.logError('Timer: Error playing sound file "'+ soundURI +'": ' + e.message);
+		}
+	},
+
     //Notify user of changes
     _notifyUser: function(text) {
         if(this._showNotifications) {
@@ -337,6 +361,7 @@ Indicator.prototype = {
             this._persistentMessageLabel.set_text(text);
             this._persistentMessageDialog.open();
         }
+        this._playNotificationSound();
     }
 };
 
