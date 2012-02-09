@@ -25,6 +25,11 @@
       <summary>Show persistent notification messages (ModalDialog)</summary>
       <description>Set to true to show persistant notification messages (ModalDialog), when timer is finished</description>
     </key>
+    <key name="ui-sound" type="b">
+      <default>true</default>
+      <summary>Add a sound effect to the notification</summary>
+      <description>Set to true to have the notification beep, when timer is finished</description>
+    </key>
     <key name="ui-elapsed" type="b">
       <default>false</default>
       <summary>Show elapsed timer</summary>

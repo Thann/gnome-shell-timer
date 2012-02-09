@@ -75,6 +75,7 @@ Indicator.prototype = {
         let load_settings = Lang.bind(this, function() {
             this._showNotifications = this._settings.get_boolean('ui-notification');
             this._showPersistentNotifications = this._settings.get_boolean('ui-persistent');
+            this._audibleNotifications = this._settings.get_boolean('ui-sound');
             this._showElapsed = this._settings.get_boolean('ui-elapsed');
             this._timer.visible = this._settings.get_boolean('ui-time');
             this._pie.visible= this._settings.get_boolean('ui-chart');
@@ -89,6 +90,7 @@ Indicator.prototype = {
         this._settings.connect('changed::manual-seconds', load_time);
         this._settings.connect('changed::ui-notification', load_settings);
         this._settings.connect('changed::ui-persistent', load_settings);
+        this._settings.connect('changed::ui-sound', load_settings);
         this._settings.connect('changed::ui-elapsed', load_settings);
         this._settings.connect('changed::ui-time', load_settings);
         this._settings.connect('changed::ui-chart', load_settings);
@@ -388,7 +390,9 @@ Indicator.prototype = {
             this._persistentMessageLabel.set_text(text);
             this._persistentMessageDialog.open();
         }
-        this._playNotificationSound();
+        if(this._audibleNotifications) {
+            this._playNotificationSound();
+        }
     }
 };
 
