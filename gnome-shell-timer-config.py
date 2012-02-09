@@ -170,7 +170,6 @@ class SettingFrame:
             item.connect('clicked', delete_row, treeView, store, self.schema)
 
         elif sections[1] == 'hours':
-            self.hbox0.add(Gtk.Label(_('Set default timer values:')))
             item = IntSelect(_('Hours'))
             item.set_args(0, 23, 1, 10)
             item.set_value(self.schema.get_int(key))
@@ -188,6 +187,12 @@ class SettingFrame:
             item.set_value(self.schema.get_int(key))
             self.hbox3.add(item.actor)
             item.spin.connect('output', set_int, self.schema, key)
+        elif sections[1] == 'override':
+            item = Gtk.CheckButton(label=_('Same as Applet'))
+            item.set_active(self.schema.get_boolean(key))
+            self.hbox0.add(item)
+            self.hbox0.add(Gtk.Label(_('Set default timer values:')))
+            item.connect('toggled', set_boolean, self.schema, key)
         elif sections[1] == 'notification':
             item = Gtk.CheckButton(label=_('Show Notification'))
             item.set_active(self.schema.get_boolean(key))

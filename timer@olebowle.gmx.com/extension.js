@@ -73,6 +73,7 @@ Indicator.prototype = {
         });
 
         let load_settings = Lang.bind(this, function() {
+            this._manualOverride = this._settings.get_boolean('manual-override');
             this._showNotifications = this._settings.get_boolean('ui-notification');
             this._showPersistentNotifications = this._settings.get_boolean('ui-persistent');
             this._audibleNotifications = this._settings.get_boolean('ui-sound');
@@ -88,6 +89,7 @@ Indicator.prototype = {
         this._settings.connect('changed::manual-hours', load_time);
         this._settings.connect('changed::manual-minutes', load_time);
         this._settings.connect('changed::manual-seconds', load_time);
+        this._settings.connect('changed::manual-override', load_settings);
         this._settings.connect('changed::ui-notification', load_settings);
         this._settings.connect('changed::ui-persistent', load_settings);
         this._settings.connect('changed::ui-sound', load_settings);
@@ -242,7 +244,8 @@ Indicator.prototype = {
         this._hoursSlider.connect('value-changed', Lang.bind(this, function() {
             this._hours = Math.ceil(this._hoursSlider._value*23);
             this._hoursLabel.set_text(this._hours.toString() + "h");
-            this._settings.set_int('manual-hours',this._hours);
+            if (this._manualOverride)
+                this._settings.set_int('manual-hours',this._hours);
             update();
         } ));
         this._timerMenu.menu.addMenuItem(this._hoursSlider);
@@ -258,7 +261,8 @@ Indicator.prototype = {
         this._minutesSlider.connect('value-changed', Lang.bind(this, function() {
             this._minutes = Math.ceil(this._minutesSlider._value*59);
             this._minutesLabel.set_text(this._minutes.toString() + "m");
-            this._settings.set_int('manual-minutes',this._minutes);
+            if (this._manualOverride)
+                this._settings.set_int('manual-minutes',this._minutes);
             update();
         } ));
         this._timerMenu.menu.addMenuItem(this._minutesSlider);
@@ -274,7 +278,8 @@ Indicator.prototype = {
         this._secondsSlider.connect('value-changed', Lang.bind(this, function() {
             this._seconds = Math.ceil(this._secondsSlider._value*59);
             this._secondsLabel.set_text(this._seconds.toString() + "s");
-            this._settings.set_int('manual-seconds',this._seconds);
+            if (this._manualOverride)
+                this._settings.set_int('manual-seconds',this._seconds);
             update();
         } ));
         this._timerMenu.menu.addMenuItem(this._secondsSlider);

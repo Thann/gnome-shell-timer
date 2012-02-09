@@ -15,6 +15,11 @@
       <summary>Seconds in manual mode</summary>
       <description>Time in seconds the timer is about to run in manual mode</description>
     </key>
+    <key name="manual-override" type="b">
+      <default>true</default>
+      <summary>Use the values set on the applet</summary>
+      <description>If set to false, these settings won't change when the "Set Timer" values are changed. Additionally, every time the applet restarts the timer will be set to the "Manual" values</description>
+    </key>
     <key name="ui-notification" type="b">
       <default>false</default>
       <summary>Show notification messages</summary>
@@ -23,7 +28,7 @@
     <key name="ui-persistent" type="b">
       <default>true</default>
       <summary>Show persistent notification messages (ModalDialog)</summary>
-      <description>Set to true to show persistant notification messages (ModalDialog), when timer is finished</description>
+      <description>Set to true to show persistent notification messages (ModalDialog), when timer is finished</description>
     </key>
     <key name="ui-sound" type="b">
       <default>true</default>
