@@ -203,6 +203,11 @@ class SettingFrame:
             item.set_active(self.schema.get_boolean(key))
             self.hbox2.add(item)
             item.connect('toggled', set_boolean, self.schema, key)
+        elif sections[1] == 'sound':
+            item = Gtk.CheckButton(label=_('Audible Notification'))
+            item.set_active(self.schema.get_boolean(key))
+            self.hbox2.add(item)
+            item.connect('toggled', set_boolean, self.schema, key)
         elif sections[1] == 'time':
             item = Gtk.CheckButton(label=_('Show Time'))
             item.set_active(self.schema.get_boolean(key))
