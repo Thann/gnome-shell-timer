@@ -203,25 +203,35 @@ class SettingFrame:
             item.set_active(self.schema.get_boolean(key))
             self.hbox0.add(item)
             item.connect('toggled', set_boolean, self.schema, key)
-        elif sections[1] == 'elapsed':
-            item = Gtk.CheckButton(label=_('Show Elapsed Time'))
-            item.set_active(self.schema.get_boolean(key))
-            self.hbox2.add(item)
-            item.connect('toggled', set_boolean, self.schema, key)
         elif sections[1] == 'sound':
             item = Gtk.CheckButton(label=_('Audible Notification'))
-            item.set_active(self.schema.get_boolean(key))
-            self.hbox2.add(item)
-            item.connect('toggled', set_boolean, self.schema, key)
-        elif sections[1] == 'time':
-            item = Gtk.CheckButton(label=_('Show Time'))
             item.set_active(self.schema.get_boolean(key))
             self.hbox1.add(item)
             item.connect('toggled', set_boolean, self.schema, key)
         elif sections[1] == 'chart':
             item = Gtk.CheckButton(label=_('Show Chart'))
             item.set_active(self.schema.get_boolean(key))
+            self.hbox0.add(item)
+            item.connect('toggled', set_boolean, self.schema, key)
+        elif sections[1] == 'elapsed':
+            item = Gtk.CheckButton(label=_('Show Elapsed Time'))
+            item.set_active(self.schema.get_boolean(key))
+            self.hbox0.add(item)
+            item.connect('toggled', set_boolean, self.schema, key)
+        elif sections[1] == 'time':
+            item = Gtk.CheckButton(label=_('Show Time'))
+            item.set_active(self.schema.get_boolean(key))
             self.hbox1.add(item)
+            item.connect('toggled', set_boolean, self.schema, key)
+        elif sections[1] == 'restart':
+            item = Gtk.CheckButton(label=_('Show Restart Button'))
+            item.set_active(self.schema.get_boolean(key))
+            self.hbox1.add(item)
+            item.connect('toggled', set_boolean, self.schema, key)
+        elif sections[1] == 'leftclick':
+            item = Gtk.CheckButton(label=_('Left-Click to Start'))
+            item.set_active(self.schema.get_boolean(key))
+            self.hbox2.add(item)
             item.connect('toggled', set_boolean, self.schema, key)
         elif len(sections) == 3 and sections[2] == 'color':
             item = ColorSelect(_(sections[1].capitalize()))
@@ -230,7 +240,7 @@ class SettingFrame:
             item.picker.connect('color-set', set_color, self.schema, key)
 
 class App:
-    setting_items = ('manual', 'ui', 'presets')
+    setting_items = ('manual', 'alert', 'ui', 'presets')
 
     def __init__(self):
         self.schema = Gio.Settings('org.gnome.shell.extensions.timer')

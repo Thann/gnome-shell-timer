@@ -20,20 +20,25 @@
       <summary>Use the values set on the applet</summary>
       <description>If set to false, these settings won't change when the "Set Timer" values are changed. Additionally, every time the applet restarts the timer will be set to the "Manual" values</description>
     </key>
-    <key name="ui-notification" type="b">
-      <default>false</default>
+    <key name="alert-notification" type="b">
+      <default>true</default>
       <summary>Show notification messages</summary>
       <description>Set to true to show notification messages, when timer is finished</description>
     </key>
-    <key name="ui-persistent" type="b">
-      <default>true</default>
+    <key name="alert-persistent" type="b">
+      <default>false</default>
       <summary>Show persistent notification messages (ModalDialog)</summary>
       <description>Set to true to show persistent notification messages (ModalDialog), when timer is finished</description>
     </key>
-    <key name="ui-sound" type="b">
+    <key name="alert-sound" type="b">
       <default>true</default>
       <summary>Add a sound effect to the notification</summary>
       <description>Set to true to have the notification beep, when timer is finished</description>
+    </key>
+    <key name="ui-chart" type="b">
+      <default>true</default>
+      <summary>Show pie chart in panel</summary>
+      <description>Set to true to show pie chart in panel</description>
     </key>
     <key name="ui-elapsed" type="b">
       <default>false</default>
@@ -45,10 +50,15 @@
       <summary>Show time in panel</summary>
       <description>Set to true to show time in panel</description>
     </key>
-    <key name="ui-chart" type="b">
+    <key name="ui-restart" type="b">
       <default>true</default>
-      <summary>Show pie chart in panel</summary>
-      <description>Set to true to show pie chart in panel</description>
+      <summary>Show the restart button</summary>
+      <description>Set to true to show "Restart Timer" button in panel</description>
+    </key>
+    <key name="ui-leftclick" type="b">
+      <default>true</default>
+      <summary>Left-clicking the applet will start it</summary>
+      <description>When set to true, and the timer is stopped; left-clicking the panel will start the timer. When the clock is going, a left-click will open the menu. Right-clicks open the menu.</description>
     </key>
     <key name="ui-dark-color" type="s">
       <default>'#474747ff'</default>

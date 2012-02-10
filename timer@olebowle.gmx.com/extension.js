@@ -69,17 +69,19 @@ Indicator.prototype = {
             this._hours = this._settings.get_int('manual-hours');
             this._minutes = this._settings.get_int('manual-minutes');
             this._seconds = this._settings.get_int('manual-seconds');
-            this._time = this._hours*3600 + this._minutes*60 + this._seconds;
+            this._update();
         });
 
         let load_settings = Lang.bind(this, function() {
             this._manualOverride = this._settings.get_boolean('manual-override');
-            this._showNotifications = this._settings.get_boolean('ui-notification');
-            this._showPersistentNotifications = this._settings.get_boolean('ui-persistent');
-            this._audibleNotifications = this._settings.get_boolean('ui-sound');
+            this._showNotifications = this._settings.get_boolean('alert-notification');
+            this._showPersistentNotifications = this._settings.get_boolean('alert-persistent');
+            this._audibleNotifications = this._settings.get_boolean('alert-sound');
+            this._pie.visible = this._settings.get_boolean('ui-chart');
             this._showElapsed = this._settings.get_boolean('ui-elapsed');
+            this._restart.visible = this._settings.get_boolean('ui-restart');
             this._timer.visible = this._settings.get_boolean('ui-time');
-            this._pie.visible= this._settings.get_boolean('ui-chart');
+            this._leftClick = this._settings.get_boolean('ui-leftclick');
             this._darkColor = this._settings.get_string('ui-dark-color');
             this._lightColor = this._settings.get_string('ui-light-color');
             this._presets = this._settings.get_value('presets').deep_unpack();
@@ -90,12 +92,14 @@ Indicator.prototype = {
         this._settings.connect('changed::manual-minutes', load_time);
         this._settings.connect('changed::manual-seconds', load_time);
         this._settings.connect('changed::manual-override', load_settings);
-        this._settings.connect('changed::ui-notification', load_settings);
-        this._settings.connect('changed::ui-persistent', load_settings);
-        this._settings.connect('changed::ui-sound', load_settings);
-        this._settings.connect('changed::ui-elapsed', load_settings);
-        this._settings.connect('changed::ui-time', load_settings);
+        this._settings.connect('changed::alert-notification', load_settings);
+        this._settings.connect('changed::alert-persistent', load_settings);
+        this._settings.connect('changed::alert-sound', load_settings);
         this._settings.connect('changed::ui-chart', load_settings);
+        this._settings.connect('changed::ui-elapsed', load_settings);
+        this._settings.connect('changed::ui-restart', load_settings);
+        this._settings.connect('changed::ui-time', load_settings);
+        this._settings.connect('changed::ui-leftclick', load_settings);
         this._settings.connect('changed::ui-dark-color', load_settings);
         this._settings.connect('changed::ui-light-color', load_settings);
         this._settings.connect('changed::presets', load_settings);
@@ -115,8 +119,6 @@ Indicator.prototype = {
         this._timeSpent = 0;
         this._stopTimer = true;
         this._issuer = 'setTimer';
-        load_time();
-        load_settings();
 
         //Manually set the location of the file we're playing.
         let Extension = imports.ui.extensionSystem.extensionMeta['timer@olebowle.gmx.com'];
@@ -153,6 +155,10 @@ Indicator.prototype = {
             this._restartTimer();
         }));
         this.menu.addMenuItem(item);
+        this._restart = item.actor;
+
+        load_time();
+        load_settings();
 
         //Separator
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -207,7 +213,7 @@ Indicator.prototype = {
     //Left clicking the icon will start the timer
     _onButtonPress: function(actor, event) {
         let button = event.get_button();
-        if (button == 1 && this._stopTimer == true) {//left-click
+        if (button == 1 && this._stopTimer == true && this._leftClick) {
             this._widget.toggle();
             this.menu.close();
         } else {// if (button == 3) { //right-click
@@ -219,20 +225,20 @@ Indicator.prototype = {
         }
     },
 
+//Helper function that refreshes the applet whenever you change one of the sliders
+    _update: function() {
+        this._time = this._hours*3600 + this._minutes*60 + this._seconds;
+        this._issuer = 'setTimer';
+        //'_stopTimer' must be 'true' when it's called from this location
+        let temp = this._stopTimer;
+        this._stopTimer = true;
+        this._refreshTimer();
+        this._stopTimer = temp;
+        this._pie.queue_repaint();
+    },
+
     //Add sliders SubMenu to manually set the timer
     _buildTimerMenu: function() {
-        //Helper function that refreshes the applet whenever you change one of the sliders
-        let update = Lang.bind(this, function() {
-            this._time = this._hours*3600 + this._minutes*60 + this._seconds;
-            this._issuer = 'setTimer';
-            //'_stopTimer' must be 'true' when it's called from this location
-            let temp = this._stopTimer;
-            this._stopTimer = true;
-            this._refreshTimer();
-            this._stopTimer = temp;
-            this._pie.queue_repaint();
-        });
-        
         //Hours
         let item = new PopupMenu.PopupMenuItem(_("Hours"), { reactive: false });
         this._hoursLabel = new St.Label({ text: this._hours.toString() + "h" });
@@ -246,7 +252,7 @@ Indicator.prototype = {
             this._hoursLabel.set_text(this._hours.toString() + "h");
             if (this._manualOverride)
                 this._settings.set_int('manual-hours',this._hours);
-            update();
+            this._update();
         } ));
         this._timerMenu.menu.addMenuItem(this._hoursSlider);
 
@@ -263,7 +269,7 @@ Indicator.prototype = {
             this._minutesLabel.set_text(this._minutes.toString() + "m");
             if (this._manualOverride)
                 this._settings.set_int('manual-minutes',this._minutes);
-            update();
+            this._update();
         } ));
         this._timerMenu.menu.addMenuItem(this._minutesSlider);
 
@@ -280,7 +286,7 @@ Indicator.prototype = {
             this._secondsLabel.set_text(this._seconds.toString() + "s");
             if (this._manualOverride)
                 this._settings.set_int('manual-seconds',this._seconds);
-            update();
+            this._update();
         } ));
         this._timerMenu.menu.addMenuItem(this._secondsSlider);
     },
