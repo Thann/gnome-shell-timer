@@ -31,6 +31,7 @@ const MessageTray = imports.ui.messageTray;
 const ModalDialog = imports.ui.modalDialog;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
+const Extension = imports.ui.extensionSystem.extensionMeta['timer@olebowle.gmx.com'];
 
 const Gettext = imports.gettext.domain('gnome-shell-timer');
 const Util = imports.misc.util;
@@ -62,6 +63,10 @@ Indicator.prototype = {
         PanelMenu.Button.prototype._init.call(this, 0.0);
         String.prototype.format = Format.format;
 
+        //Manually define the location of the default sound file
+        let defaultSoundURI = GLib.filename_to_uri(GLib.build_filenamev([Extension.path, 'bell.wav']),null);
+        this._playbin = Gst.ElementFactory.make('playbin2', null);
+
         // Load settings
         this._settings = getSettings('org.gnome.shell.extensions.timer');
 
@@ -87,6 +92,24 @@ Indicator.prototype = {
             this._presets = this._settings.get_value('presets').deep_unpack();
         });
 
+        let load_sound = Lang.bind(this, function() {
+            let uri = this._settings.get_string('alert-file')
+            this.playbin = Gst.ElementFactory.make('playbin2', null);
+            this.playbin.set_property('uri', uri);
+            this.playbin.set_property('volume', 0.0);
+            this.playbin.set_state(Gst.State.NULL);
+            this.playbin.set_state(Gst.State.PLAYING);
+            let success = this.playbin.get_state(1)[0];
+            this.playbin.set_state(Gst.State.NULL);
+            this._playbin.set_state(Gst.State.NULL);
+            this._playbin = Gst.ElementFactory.make('playbin2', null);
+            if (!success){
+                this._playbin.set_property('uri', defaultSoundURI);
+                this._settings.set_string('alert-file', defaultSoundURI)
+            } else
+                this._playbin.set_property('uri', uri);
+        });
+
         // Watch settings for changes
         this._settings.connect('changed::manual-hours', load_time);
         this._settings.connect('changed::manual-minutes', load_time);
@@ -95,6 +118,7 @@ Indicator.prototype = {
         this._settings.connect('changed::alert-notification', load_settings);
         this._settings.connect('changed::alert-persistent', load_settings);
         this._settings.connect('changed::alert-sound', load_settings);
+        this._settings.connect('changed::alert-file', load_sound);
         this._settings.connect('changed::ui-chart', load_settings);
         this._settings.connect('changed::ui-elapsed', load_settings);
         this._settings.connect('changed::ui-restart', load_settings);
@@ -119,13 +143,6 @@ Indicator.prototype = {
         this._timeSpent = 0;
         this._stopTimer = true;
         this._issuer = 'setTimer';
-
-        //Manually set the location of the file we're playing.
-        let Extension = imports.ui.extensionSystem.extensionMeta['timer@olebowle.gmx.com'];
-        let soundURI = GLib.filename_to_uri(GLib.build_filenamev([Extension.path, 'bell.wav']),null);
-        //Make sound-playing-object
-        this._playbin = Gst.ElementFactory.make('playbin2', null);
-        this._playbin.set_property('uri', soundURI);
 
         //Set Logo
         this._logo = new St.Icon({ icon_name: 'utilities-timer',
@@ -159,6 +176,7 @@ Indicator.prototype = {
 
         load_time();
         load_settings();
+        load_sound();
 
         //Separator
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -384,7 +402,7 @@ Indicator.prototype = {
             this._playbin.set_state(Gst.State.READY);
             this._playbin.set_state(Gst.State.PLAYING);
         } catch (e) {
-            global.logError('Timer: Error playing sound file "'+ soundURI +'": ' + e.message);
+            global.logError('Timer: Error playing sound file! ' + e.message);
         }
     },
 

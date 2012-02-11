@@ -102,6 +102,9 @@ def set_presets(store, schema):
         presets[key[0]] = key[1]
     schema.set_value('presets', GLib.Variant('a{si}', presets))
 
+def set_file(value, schema, name):
+        schema.set_string(name, value.get_uri())
+
 def delete_row(data, treeview, store, schema):
     model, row = treeview.get_selection().get_selected()
     store.remove(row)
@@ -208,6 +211,12 @@ class SettingFrame:
             item.set_active(self.schema.get_boolean(key))
             self.hbox1.add(item)
             item.connect('toggled', set_boolean, self.schema, key)
+        elif sections[1] == 'file':
+            item = Gtk.FileChooserButton(title=_('Select a Notification Sound File'), action=_(Gtk.FileChooserAction.OPEN))
+            item.set_uri(self.schema.get_string(key))
+            self.hbox3.add(item)
+            self.hbox2.add(Gtk.Label(_('Select a Notification Sound File:')))
+            item.connect('file-set', set_file, self.schema, key)
         elif sections[1] == 'chart':
             item = Gtk.CheckButton(label=_('Show Chart'))
             item.set_active(self.schema.get_boolean(key))

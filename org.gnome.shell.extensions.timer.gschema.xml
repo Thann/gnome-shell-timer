@@ -35,6 +35,11 @@
       <summary>Add a sound effect to the notification</summary>
       <description>Set to true to have the notification beep, when timer is finished</description>
     </key>
+    <key name="alert-file" type="s">
+      <default>''</default>
+      <summary>Provide a custom notification sound URI</summary>
+      <description>Set to the URI for the file. The default beep will be used if nothing suitable entered</description>
+    </key>
     <key name="ui-chart" type="b">
       <default>true</default>
       <summary>Show pie chart in panel</summary>
